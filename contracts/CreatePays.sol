@@ -10,8 +10,8 @@
 pragma solidity 0.4.24;
 
 import "./Ownable.sol";
-//import "./CustToken.sol";
-import "./Tokens.sol";
+import "./CustToken.sol";
+//import "./Token.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract CustTokenInterface{
@@ -27,6 +27,7 @@ contract createPays is Ownable{
 
     using SafeMath for uint;
     uint16 convRate = 1;
+    uint initialDebt;
     uint value;
     uint penalizedValue;
     bool penalized1 = true;
@@ -64,6 +65,7 @@ contract createPays is Ownable{
         owner = _supplyerAddress;
         ownerBill[_client].id = _id;
         ownerBill[_client].amount = _amount;
+        initialDebt = _amount;
         ownerBill[_client].ownerSupply = _supplyerAddress;
         ownerBill[_client].createdBill = _created;
         ownerBill[_client].expiresBill = _expires;
@@ -76,17 +78,18 @@ contract createPays is Ownable{
         //uint _amountPenalized;
         if (now >= ownerBill[_client].expiresBill){
             ownerBill[_client].penalized = true;
-            if (now < ownerBill[_client].expiresBill + 1 minutes){ require (penalized1); penalizedValue = 10; penalized1 = false;}
+            if (now < ownerBill[_client].expiresBill + 1 minutes){ require (penalized1); penalizedValue = initialDebt.mul(1).div(100); penalized1 = false;}
             else if (now >= ownerBill[_client].expiresBill + 1 minutes){
-                if (now < ownerBill[_client].expiresBill + 5 minutes) { require (penalized2); penalizedValue = 20; penalized2 = false;}
+                if (now < ownerBill[_client].expiresBill + 5 minutes) { require (penalized2); penalizedValue = initialDebt.mul(2).div(100); penalized2 = false;}
                 else if (now >= ownerBill[_client].expiresBill + 5 minutes){
-                    if (now < ownerBill[_client].expiresBill + 7 minutes) { require (penalized3); penalizedValue = 30; penalized3 = false;}
+                    if (now < ownerBill[_client].expiresBill + 7 minutes) { require (penalized3); penalizedValue = initialDebt.mul(5).div(100); penalized3 = false;}
                     else if (now >= ownerBill[_client].expiresBill + 7 minutes){
-                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4); penalizedValue = 100; penalized4 = false;}
+                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4); penalizedValue = initialDebt.mul(8).div(100); penalized4 = false;}
                         else if (now >= ownerBill[_client].expiresBill + 8 minutes){
-                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5); penalizedValue = 200; penalized5 = false;}
+                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5); penalizedValue = initialDebt.mul(15).div(100); penalized5 = false;}
                             else if (now >= ownerBill[_client].expiresBill + 10 minutes){
                                 require (penalized6); 
+                                penalizedValue = initialDebt.mul(20).div(100);
                                 ownerBill[_client].blacklisted = true; // Se habilita inscripción en blacklist
                             }
                         }
