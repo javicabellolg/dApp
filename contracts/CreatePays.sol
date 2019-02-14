@@ -10,13 +10,19 @@
 pragma solidity 0.4.24;
 
 import "./Ownable.sol";
-import "./CustToken.sol";
-//import "./Token.sol";
+//import "./CustToken.sol";
+import "./Tokens.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract CustTokenInterface{
-    function balanceOf(address owner) public view returns (uint256);
-    function transfer(address to, uint256 value) public view returns (bool);
+    function totalSupply() public constant returns (uint);
+    function balanceOf(address tokenOwner) public constant returns (uint balance);
+    function allowance(address tokenOwner, address spender) public constant returns (uint remaining);
+    function transfer(address to, uint tokens) public returns (bool success);
+    function approve(address spender, uint tokens) public returns (bool success);
+    function transferFrom(address from, address to, uint tokens) public returns (bool success);
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
 
 contract incentivesInterface_Pays{
@@ -60,8 +66,9 @@ contract createPays is Ownable{
     Bill[] public bills;
 
     mapping (address => Bill) public ownerBill;
+    mapping (address => bool) public enableTokens;
 
-    constructor(address _client, address _supplyerAddress, uint _id, uint _amount, uint _created, uint _expires) public {
+    constructor(address _client, address _supplyerAddress, uint _id, uint _amount, uint _created, uint _expires, address _Tokens) public {
         owner = _supplyerAddress;
         ownerBill[_client].id = _id;
         ownerBill[_client].amount = _amount;
@@ -72,6 +79,9 @@ contract createPays is Ownable{
         ownerBill[_client].penalized = false;
         ownerBill[_client].blacklisted = false;
         emit billRegister(_id, _amount, _client);
+
+	custoken = CustTokenInterface(_Tokens);
+        enableTokens[_Tokens] = true;
     }
 
     modifier evaluateExpires(address _client){
@@ -128,6 +138,7 @@ contract createPays is Ownable{
     }
 
     function setJCLTokenContractAddress(address _address) external {
+        require (enableTokens[_address]);
         custoken = CustTokenInterface(_address);
     }
 

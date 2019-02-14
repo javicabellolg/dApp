@@ -36,9 +36,9 @@ contract CustFactory is Ownable{
     createPaysInterface public checkBlackListed;
     incentivesInterface public incentives;
 
-    function createPayContract(uint _id, address _client, uint _amount, uint _timeExtra) public onlyOwner {
+    function createPayContract(uint _id, address _client, uint _amount, uint _timeExtra, address _tokenAddress) public onlyOwner {
         if (idToOwner[_id] == 0 && blacklist[_client].amount == 0) {
-            idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount, now, now + _timeExtra);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
+            idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount, now, now + _timeExtra, _tokenAddress);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
             incentives.addPoints(_client);
         }
         //PONER UN ELSE CON UN EVENTO QUE INDIQUE QUE NO SE HA CREADO EL CONTRATO

@@ -35,7 +35,7 @@ contract Tokens is Ownable, usingOraclize {
 
     /* Initializes contract with initial supply tokens to the creator of the contract */
     constructor(uint256 initialSupply, string tokenName, string tokenSymbol) public {
-        OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
+	OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
 	owner = msg.sender;
         totalSupply = initialSupply;
         balanceOf[owner] = totalSupply;
