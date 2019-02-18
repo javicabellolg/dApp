@@ -88,15 +88,15 @@ contract createPays is Ownable{
         //uint _amountPenalized;
         if (now >= ownerBill[_client].expiresBill){
             ownerBill[_client].penalized = true;
-            if (now < ownerBill[_client].expiresBill + 1 minutes){ require (penalized1); penalizedValue = initialDebt.mul(1).div(100); penalized1 = false;}
+            if (now < ownerBill[_client].expiresBill + 1 minutes){ require (penalized1,"Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(1).div(100); penalized1 = false;}
             else if (now >= ownerBill[_client].expiresBill + 1 minutes){
-                if (now < ownerBill[_client].expiresBill + 5 minutes) { require (penalized2); penalizedValue = initialDebt.mul(2).div(100); penalized2 = false;}
+                if (now < ownerBill[_client].expiresBill + 5 minutes) { require (penalized2, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(2).div(100); penalized2 = false;}
                 else if (now >= ownerBill[_client].expiresBill + 5 minutes){
-                    if (now < ownerBill[_client].expiresBill + 7 minutes) { require (penalized3); penalizedValue = initialDebt.mul(5).div(100); penalized3 = false;}
+                    if (now < ownerBill[_client].expiresBill + 7 minutes) { require (penalized3, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(5).div(100); penalized3 = false;}
                     else if (now >= ownerBill[_client].expiresBill + 7 minutes){
-                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4); penalizedValue = initialDebt.mul(8).div(100); penalized4 = false;}
+                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(8).div(100); penalized4 = false;}
                         else if (now >= ownerBill[_client].expiresBill + 8 minutes){
-                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5); penalizedValue = initialDebt.mul(15).div(100); penalized5 = false;}
+                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(15).div(100); penalized5 = false;}
                             else if (now >= ownerBill[_client].expiresBill + 10 minutes){
                                 require (penalized6); 
                                 penalizedValue = initialDebt.mul(20).div(100);
@@ -112,7 +112,7 @@ contract createPays is Ownable{
     }
 
     modifier paying(address _client, uint _amount) {
-        require(custoken.balanceOf(_client) >= _amount);
+        require(custoken.balanceOf(_client) >= _amount, "El balance no es suficiente para efectuar el pago");
         custoken.transfer(ownerBill[_client].ownerSupply, _amount);
         ownerBill[_client].amount = ownerBill[_client].amount.sub(_amount);
         emit billStatus(ownerBill[_client].amount);
@@ -138,7 +138,7 @@ contract createPays is Ownable{
     }
 
     function setJCLTokenContractAddress(address _address) external {
-        require (enableTokens[_address]);
+        require (enableTokens[_address], "La dirección que ha introducido no está habilitada para efectuar pagos");
         custoken = CustTokenInterface(_address);
     }
 

@@ -1,8 +1,11 @@
 var CustToken = artifacts.require('./Tokens.sol')
 var CustFactory = artifacts.require('./CustFactory.sol')
-var CreatePays = artifacts.require('./createPays.sol')
+//var CreatePays = artifacts.require('./createPays.sol')
 var ConvertLib = artifacts.require('./ConvertLib.sol')
 var Incentives = artifacts.require('./Incentives.sol')
+//var CustToken = artifacts.require('./CustToken.sol')
+var Usuarios = artifacts.require('./Usuarios.sol')
+var Merchant = artifacts.require('./Merchant.sol')
 
 module.exports = function (deployer){
   var addressIncentives;
@@ -23,5 +26,14 @@ module.exports = function (deployer){
       });
     });
   });
-  deployer.deploy(CreatePays, "0x03", "0x00", 1, 1, 1, 1, "0x000");
+  console.log("Ha finalizado la importación de contratos")
+  //deployer.deploy(CreatePays, "0x03", "0x00", 1, 1, 1, 1, "0x000");
+  var userAddress;
+  deployer.deploy(Usuarios).then(function (instance) {userAddress = instance.address;});
+  deployer.deploy(Merchant).then(function (instanceMerchant) {
+        CustFactory.deployed().then(async (instanceFactory) => {
+		console.log (userAddress)
+                await instanceFactory.setClientMerchantContracts(userAddress, instanceMerchant.address);
+        });
+  });
 }

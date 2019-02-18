@@ -25,7 +25,7 @@ contract Incentives is Ownable{
     }
 
     function addPoints (address _client) public {
-        require(userEnables[msg.sender]);
+        require(userEnables[msg.sender], "Usted no está habilitado para realizar esta operación");
         incentives[_client].points = incentives[_client].points.add(pointsToAdd);
         if (incentives[_client].points == 10){
             incentives[_client].discount = true;
