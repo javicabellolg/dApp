@@ -1,9 +1,7 @@
 var CustToken = artifacts.require('./Tokens.sol')
 var CustFactory = artifacts.require('./CustFactory.sol')
-//var CreatePays = artifacts.require('./createPays.sol')
 var ConvertLib = artifacts.require('./ConvertLib.sol')
 var Incentives = artifacts.require('./Incentives.sol')
-//var CustToken = artifacts.require('./CustToken.sol')
 var Usuarios = artifacts.require('./Usuarios.sol')
 var Merchant = artifacts.require('./Merchant.sol')
 

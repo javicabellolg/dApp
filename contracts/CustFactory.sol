@@ -29,6 +29,7 @@ contract CustTokenInterface{
 
 contract incentivesInterface_Pays{
     function addPoints (address _client) public;
+    function resetPoints (address _client) public;
 }
 
 contract createPaysInterface{
@@ -38,6 +39,7 @@ contract createPaysInterface{
 
 contract incentivesInterface{
     function addPoints (address _client) public;
+    function resetPoints (address _client) public;
 }
 
 contract usuariosInterface{
@@ -54,6 +56,12 @@ contract CustFactory is Ownable{
     createPaysInterface public checkBlackListed;
     incentivesInterface public incentives;
 
+    // Indicador del estado del contrato.
+    bool isStopped = false;
+
+    event billCreationStatus (string errMsg, uint id, address client);
+    event blackListed (string Msg, address user, uint amount, address notifier);
+
     struct black{
         address notifier;
         uint amount;
@@ -63,31 +71,50 @@ contract CustFactory is Ownable{
     mapping (address => bool) public permissions;
     mapping (address => black) public blacklist;
 
-    function createPayContract(uint _id, address _client, uint _amount, uint _timeExtra, address _tokenAddress) public {
-        require (usuarioActivo.userActiveState(_client), "El usuario no está dado de alta en el sistema");
-	require (merchantActivo.merchantActiveStatus(msg.sender), "El merchant no está dado de alta en el sistema");
-	if (idToOwner[_id] == 0 && blacklist[_client].amount == 0) {
-            idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount, now, now + _timeExtra, _tokenAddress);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
-            incentives.addPoints(_client);
-        }
-        //PONER UN ELSE CON UN EVENTO QUE INDIQUE QUE NO SE HA CREADO EL CONTRATO
+    //Modificador que comprueba que solo pueda ejecutar la función si el contrato no está parado. Incluyo mensaje como buenas prácticas.
+    modifier stoppedInEmergency {
+        require(!isStopped, "El contrato está parado");
+        _;
     }
 
-    function permissionAdd(address _address) public {
-      	require (merchantActivo.merchantActiveStatus(msg.sender), "El merchant no está dado de alta en el sistema");
+    modifier permissionAddToBlacklist{
+	require (permissions[msg.sender], "Usted no está habilitado para realizar esta acción");
+	_;
+    }
+
+    modifier requireUser(address _client){
+	require (usuarioActivo.userActiveState(_client), "El usuario no está dado de alta en el sistema");
+    	_;
+    }
+
+    modifier requireMerchant {
+	require (merchantActivo.merchantActiveStatus(msg.sender), "El merchant no está dado de alta en el sistema");
+    	_;
+    }
+
+    function createPayContract(uint _id, address _client, uint _amount, uint _timeExtra, address _tokenAddress) public stoppedInEmergency requireUser(_client) requireMerchant {
+	if (idToOwner[_id] == 0 && blacklist[_client].amount == 0) {
+	    idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount, now, now + _timeExtra, _tokenAddress);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
+            incentives.addPoints(_client);
+	    emit billCreationStatus ("El requerimiento de cobro se ha creado satisfactoriamente", _id, _client);
+        }
+        else { emit billCreationStatus ("El requerimiento de cobro no ha podido crearse. El id de la factura está duplicado o el usuario está incluído en la blacklist.", _id, _client);} 
+    }
+
+    function permissionAdd(address _address) public requireMerchant{
         permissions[_address] = true;
     }
 
-    function addToBlackList(address _client, uint _id) public {
-        require (permissions[msg.sender], "Usted no está habilitado para realizar esta acción");
+    function addToBlackList(address _client, uint _id) external permissionAddToBlacklist {
         checkBlackListed = createPaysInterface(idToOwner[_id]);
         require(checkBlackListed.checkMaxPenalized(_client), "Todavía no ha pasado el tiempo necesario para incluir al cliente en la blacklist");
         blacklist[_client].notifier = msg.sender;
         blacklist[_client].amount = checkBlackListed.checkAmount(_client);
+	incentives.resetPoints(_client);
+	emit blackListed ("Usuario añadido a la blacklist", _client, blacklist[_client].amount, blacklist[_client].notifier);
     }
 
-    function deleteFromBlackList(address _client, uint _id) public {
-        require (permissions[msg.sender], "Usted no tiene permiso para realizar esta acción");
+    function deleteFromBlackList(address _client, uint _id) external permissionAddToBlacklist {
         checkBlackListed = createPaysInterface(idToOwner[_id]);
         require (checkBlackListed.checkAmount(_client) == 0, "El cliente no ha satisfecho sus deudas, No puede borrarse de la blacklist");
         delete blacklist[_client];
@@ -100,6 +127,16 @@ contract CustFactory is Ownable{
     function setClientMerchantContracts(address _client, address _merchant) public{
 	usuarioActivo = usuariosInterface(_client);
 	merchantActivo = merchantInterface(_merchant);
+    }
+
+    //Función que para el contrato en caso de emergencia.
+    function stopContract() public onlyOwner {
+        isStopped = true;
+    }
+    
+    //Función que arranca el contrato en caso de emergencia.
+    function resumeContract() public onlyOwner {
+        isStopped = false;
     }
 
     function bye_bye() external onlyOwner {
@@ -120,6 +157,8 @@ contract createPays is Ownable{
     bool penalized4 = true;
     bool penalized5 = true;
     bool penalized6 = true;
+    // Indicador del estado del contrato.
+    bool isStopped = false;
 
     CustTokenInterface public custoken;
     incentivesInterface_Pays public incentives;
@@ -144,7 +183,7 @@ contract createPays is Ownable{
     Bill[] public bills;
 
     mapping (address => Bill) public ownerBill;
-    mapping (address => bool) public enableTokens;
+    mapping (address => bool) enableTokens;
 
     constructor(address _client, address _supplyerAddress, uint _id, uint _amount, uint _created, uint _expires, address _Tokens) public {
         owner = _supplyerAddress;
@@ -162,6 +201,12 @@ contract createPays is Ownable{
         enableTokens[_Tokens] = true;
     }
 
+    //Modificador que comprueba que solo pueda ejecutar la función si el contrato no está parado. Incluyo mensaje como buenas prácticas.
+    modifier stoppedInEmergency {
+        require(!isStopped, "El contrato está parado");
+        _;
+    }
+
     modifier evaluateExpires(address _client){
         //uint _amountPenalized;
         if (now >= ownerBill[_client].expiresBill){
@@ -172,12 +217,11 @@ contract createPays is Ownable{
                 else if (now >= ownerBill[_client].expiresBill + 5 minutes){
                     if (now < ownerBill[_client].expiresBill + 7 minutes) { require (penalized3, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(5).div(100); penalized3 = false;}
                     else if (now >= ownerBill[_client].expiresBill + 7 minutes){
-                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(8).div(100); penalized4 = false;}
+                        if (now < ownerBill[_client].expiresBill + 8 minutes) { require (penalized4, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(12).div(100); penalized4 = false;}
                         else if (now >= ownerBill[_client].expiresBill + 8 minutes){
-                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(15).div(100); penalized5 = false;}
+                            if (now < ownerBill[_client].expiresBill + 10 minutes) { require (penalized5, "Usted ya ha efectuado el intento de pago y no ha abonado la cantidad adeudada"); penalizedValue = initialDebt.mul(20).div(100); penalized5 = false;}
                             else if (now >= ownerBill[_client].expiresBill + 10 minutes){
                                 require (penalized6); 
-                                penalizedValue = initialDebt.mul(20).div(100);
                                 ownerBill[_client].blacklisted = true; // Se habilita inscripción en blacklist
                             }
                         }
@@ -197,7 +241,7 @@ contract createPays is Ownable{
         _;
     }    
 
-    function payingWithToken(address _client, uint _amount) external payable evaluateExpires (_client) paying (_client, _amount) returns (uint) {
+    function payingWithToken(address _client, uint _amount) external payable stoppedInEmergency evaluateExpires (_client) paying (_client, _amount) returns (uint) {
         ownerBill[_client].amount = ownerBill[_client].amount.add(penalizedValue);
         penalizedValue = 0;
         emit billStatus(ownerBill[_client].amount);
@@ -211,20 +255,30 @@ contract createPays is Ownable{
         return (ownerBill[_client].amount);
     }
 
-    function supplyerAddress(address _client) public returns (address){
+    //Función que para el contrato en caso de emergencia.
+    function stopContract() public onlyOwner {
+        isStopped = true;
+    }
+    
+    //Función que arranca el contrato en caso de emergencia.
+    function resumeContract() public onlyOwner {
+        isStopped = false;
+    }
+
+    function supplyerAddress(address _client) public view returns (address){
         return (ownerBill[_client].ownerSupply);
     }
 
-    function setJCLTokenContractAddress(address _address) external {
+    function setJCLTokenContractAddress(address _address) external view {
         require (enableTokens[_address], "La dirección que ha introducido no está habilitada para efectuar pagos");
         custoken = CustTokenInterface(_address);
     }
 
-    function checkMaxPenalized (address _client) public returns (bool){
+    function checkMaxPenalized (address _client) public view returns (bool){
         return (ownerBill[_client].blacklisted);
     }
 
-    function checkAmount (address _client) public returns (uint){
+    function checkAmount (address _client) public view returns (uint){
         return (ownerBill[_client].amount);
     }
     
