@@ -4,11 +4,13 @@ var ConvertLib = artifacts.require('./ConvertLib.sol')
 var Incentives = artifacts.require('./Incentives.sol')
 var Usuarios = artifacts.require('./Usuarios.sol')
 var Merchant = artifacts.require('./Merchant.sol')
+var DAO = artifacts.require('./DAO.sol')
 
 module.exports = function (deployer){
   var addressIncentives;
   var instanceIncentives;
   var instanceCustFactory;
+  deployer.deploy(DAO, 1, 10, 0);
   deployer.deploy(ConvertLib)
   deployer.link(ConvertLib, CustToken)
   deployer.deploy(CustToken, 10000000, "Custom_Token", "CTKN");
