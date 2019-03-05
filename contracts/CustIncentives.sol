@@ -7,6 +7,7 @@ contract Incentives is Ownable{
     using SafeMath for uint;
     
     uint pointsToAdd;
+    bool isStopped = false;
 
     event pointedUser (string msg, address user, address notifier);
 
@@ -18,12 +19,9 @@ contract Incentives is Ownable{
     mapping (address => Point) public incentives;
     mapping (address => bool) private userEnables;
 
-    constructor() public{
-        pointsToAdd = 1;
-    }
-
-    function enableUsers (address _address) public onlyOwner{
-        userEnables[_address] = true;
+    modifier stoppedInEmergency {
+        require(!isStopped, "El contrato está parado");
+        _;
     }
 
     modifier userEnable {
@@ -31,7 +29,15 @@ contract Incentives is Ownable{
 	_;
     }
 
-    function addPoints (address _client) public userEnable{
+    constructor() public{
+        pointsToAdd = 1;
+    }
+
+    function enableUsers (address _address) public stoppedInEmergency onlyOwner{
+        userEnables[_address] = true;
+    }
+
+    function addPoints (address _client) public stoppedInEmergency userEnable{
         require(userEnables[msg.sender], "Usted no está habilitado para realizar esta operación");
         incentives[_client].points = incentives[_client].points.add(pointsToAdd);
 	emit pointedUser("Punto añadido al usuario", _client, msg.sender);
@@ -40,13 +46,18 @@ contract Incentives is Ownable{
         } else { incentives[_client].discount = false; }
     }
 
-    function resetPoints (address _client) public userEnable{
+    function resetPoints (address _client) public stoppedInEmergency userEnable{
 	incentives[_client].points = 0;
 	emit pointedUser("Puntos reseteados al usuario", _client, msg.sender);
     }    
 
-    function increasePointsToAdd (uint8 _points) public onlyOwner{
+    function increasePointsToAdd (uint8 _points) public stoppedInEmergency onlyOwner{
         pointsToAdd = _points;
+    }
+
+    //Función que para el contrato en caso de emergencia.
+    function stopContract() public onlyOwner {
+        isStopped = true;
     }
 
 }

@@ -1,21 +1,10 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//		Nombre: CustFactory.sol
-//		Autor: Javier Cabello Laguna
-//		Version: 0.1
-//		Descripción:
-//			Factory Contract para la creación de nuevos requerimientos de cobro. Se creará un requerimiento de cobro por cada compra. Estos requerimientos de cobro pueden ser
-//          satisfechos en el momento o aplazados.		
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 pragma solidity 0.4.24;
 
 import "./Ownable.sol";
-//import "./CustToken.sol";
 import "./Tokens.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+// Definición de Interfaces necesarias para los contratos principales.
 contract CustTokenInterface{
     function totalSupply() public constant returns (uint);
     function balanceOf(address tokenOwner) public constant returns (uint balance);
@@ -50,14 +39,27 @@ contract merchantInterface{
     function merchantActiveStatus (address _address) public view returns (bool);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//		Nombre: CustFactory.sol
+//		Autor: Javier Cabello Laguna
+//		Version: 0.1
+//		Descripción:
+//			Factory Contract para la creación de nuevos requerimientos de cobro. Se creará un requerimiento de cobro por cada compra. Estos requerimientos de cobro pueden ser
+//          satisfechos en el momento o aplazados.		
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 contract CustFactory is Ownable{
+
+    // Indicador del estado del contrato.
+    bool isStopped = false;
+
+    // Iniciación de Interfaces
     usuariosInterface public usuarioActivo;
     merchantInterface public merchantActivo;
     createPaysInterface public checkBlackListed;
     incentivesInterface public incentives;
-
-    // Indicador del estado del contrato.
-    bool isStopped = false;
 
     event billCreationStatus (string errMsg, uint id, address client);
     event blackListed (string Msg, address user, uint amount, address notifier);
@@ -143,6 +145,18 @@ contract CustFactory is Ownable{
         selfdestruct(msg.sender);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//		Nombre: createPays
+//		Autor: Javier Cabello Laguna
+//		Version: 0.1
+//		Descripción:
+//			Factory Contract para la creación de nuevos requerimientos de cobro. Se creará un requerimiento de cobro por cada compra. Estos requerimientos de cobro pueden ser
+//          satisfechos en el momento o aplazados.		
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 contract createPays is Ownable{
 

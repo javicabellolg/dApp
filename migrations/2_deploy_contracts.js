@@ -10,7 +10,13 @@ module.exports = function (deployer){
   var addressIncentives;
   var instanceIncentives;
   var instanceCustFactory;
-  deployer.deploy(DAO, 1, 10, 0);
+  var addressDAO;
+  var instanceDAO;
+  
+  deployer.deploy(DAO, 1, 10, 0).then(function(_instanceDAO){
+    addressDAO = _instanceDAO.address;
+    instanceDAO = _instanceDAO;
+  });
   deployer.deploy(ConvertLib)
   deployer.link(ConvertLib, CustToken)
   deployer.deploy(CustToken, 10000000, "Custom_Token", "CTKN");
@@ -25,15 +31,22 @@ module.exports = function (deployer){
         console.log("Finalizada la inicialización")
       });
     });
+    instanceDAO.setInterfaceToBlacklist(instanceCustFactory.address).then(function(){
+      console.log("Seteada Interfaz en DAO")
+    });
   });
   console.log("Ha finalizado la importación de contratos")
   //deployer.deploy(CreatePays, "0x03", "0x00", 1, 1, 1, 1, "0x000");
   var userAddress;
   deployer.deploy(Usuarios).then(function (instance) {userAddress = instance.address;});
   deployer.deploy(Merchant).then(function (instanceMerchant) {
-        CustFactory.deployed().then(async (instanceFactory) => {
-		console.log (userAddress)
+        instanceMerchant.createMerchant(web3.eth.accounts[0])
+	CustFactory.deployed().then(async (instanceFactory) => {
+                console.log (userAddress)
                 await instanceFactory.setClientMerchantContracts(userAddress, instanceMerchant.address);
-        });
+        	await instanceCustFactory.permissionAdd(instanceDAO.address).then(function(){
+      			console.log("Habilitados permisos en DAO")
+    		});
+	});
   });
 }

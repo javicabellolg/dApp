@@ -16,6 +16,7 @@ contract DAO is Ownable {
     uint public minimumQuorum;
     uint public debatingPeriodInSeconds;
     int public majorityMargin;
+    bool isStopped = false;
 
     interfaceToBlacklist public toBlackList;
     interfaceCheckAmount public check;
@@ -53,6 +54,8 @@ contract DAO is Ownable {
     mapping (uint => Proposal) public idToProposal;
     //mapping (address => Vote) public addressToVoteHistory;
 
+
+
     constructor (
         uint minimumQuorumForProposals,
         uint secondsForDebate,
@@ -85,7 +88,12 @@ contract DAO is Ownable {
         _;
     }
 
-    function newProposal(uint _id, address _client, uint _idBill, string _description) public onlyMembers{
+    modifier stoppedInEmergency {
+        require(!isStopped, "El contrato está parado");
+        _;
+    }
+
+    function newProposal(uint _id, address _client, uint _idBill, string _description) public stoppedInEmergency onlyMembers{
         require (idToProposal[_id].client==0, "El id de la propuesta corresponde a uno anterior");
         idToProposal[_id].client = _client;
 	idToProposal[_id].idBill = _idBill;
@@ -99,7 +107,7 @@ contract DAO is Ownable {
         idToProposal[_id].negativeVotes = 0;
     }
 
-    function voting(uint _id, bool _vote, string _justification) public onlyMembers onlyNoVoters (_id) onlyNoExecuted (_id){
+    function voting(uint _id, bool _vote, string _justification) public stoppedInEmergency onlyMembers onlyNoVoters (_id) onlyNoExecuted (_id){
         idToProposal[_id].voted[msg.sender] = true;
         idToProposal[_id].numberOfVotes++;
         idToProposal[_id].voting[msg.sender].vote = _vote;
@@ -113,7 +121,7 @@ contract DAO is Ownable {
         memberId[_member] = true;
     }
 
-    function execution(uint _id) public onlyProposalOwner (_id){
+    function execution(uint _id) public stoppedInEmergency onlyProposalOwner (_id){
         require (now > idToProposal[_id].minExecutionDate, "No ha pasado el tiempo requerido de debate de la propuesta");
         require (idToProposal[_id].numberOfVotes >=  minimumQuorum && idToProposal[_id].positiveVotes > idToProposal[_id].negativeVotes, "No se ejecuta al no haber consenso en la Organización");
         idToProposal[_id].executed = true;
@@ -138,6 +146,10 @@ contract DAO is Ownable {
 
     function setInterfaceChackAmount (address _address) public onlyOwner{
 	check = interfaceCheckAmount (_address); // Esta es la dirección del contrato de gestión de cobro.
+    }
+
+    function stopContract() public onlyOwner {
+        isStopped = true;
     }
 
 }
