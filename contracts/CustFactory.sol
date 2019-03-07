@@ -2,6 +2,7 @@ pragma solidity 0.4.24;
 
 import "./Ownable.sol";
 import "./Tokens.sol";
+//import "./SafeMath.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 // Definición de Interfaces necesarias para los contratos principales.
@@ -29,6 +30,7 @@ contract createPaysInterface{
 contract incentivesInterface{
     function addPoints (address _client) public;
     function resetPoints (address _client) public;
+    function enableToDiscount(address _client) public returns(bool);
 }
 
 contract usuariosInterface{
@@ -51,6 +53,10 @@ contract merchantInterface{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 contract CustFactory is Ownable{
+
+    using SafeMath for uint;
+    uint discountGen = 5;
+    uint percentage = 100;
 
     // Indicador del estado del contrato.
     bool isStopped = false;
@@ -95,11 +101,15 @@ contract CustFactory is Ownable{
     }
 
     function createPayContract(uint _id, address _client, uint _amount, uint _timeExtra, address _tokenAddress) public stoppedInEmergency requireUser(_client) requireMerchant {
-	if (idToOwner[_id] == 0 && blacklist[_client].amount == 0) {
+	if (idToOwner[_id] == 0 && blacklist[_client].amount == 0 && incentives.enableToDiscount(_client) == true) {
+	    idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount.sub(_amount.mul(discountGen).div(percentage)), now, now + _timeExtra, _tokenAddress);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
+            incentives.resetPoints(_client);
+	    emit billCreationStatus ("El requerimiento de cobro se ha creado satisfactoriamente", _id, _client);
+        } else if (idToOwner[_id] == 0 && blacklist[_client].amount == 0 && incentives.enableToDiscount(_client) == false){
 	    idToOwner[_id] = new createPays(_client, msg.sender, _id, _amount, now, now + _timeExtra, _tokenAddress);  // Hay que tener en cuenta que realmente el mapping relaciona el id con el address del contrato que se genera. El Owner del contrato es el msg.sender, siendo este únicamente el proveedor.
             incentives.addPoints(_client);
-	    emit billCreationStatus ("El requerimiento de cobro se ha creado satisfactoriamente", _id, _client);
-        }
+            emit billCreationStatus ("El requerimiento de cobro se ha creado satisfactoriamente", _id, _client);
+        } 
         else { emit billCreationStatus ("El requerimiento de cobro no ha podido crearse. El id de la factura está duplicado o el usuario está incluído en la blacklist.", _id, _client);} 
     }
 
@@ -129,6 +139,10 @@ contract CustFactory is Ownable{
     function setClientMerchantContracts(address _client, address _merchant) public{
 	usuarioActivo = usuariosInterface(_client);
 	merchantActivo = merchantInterface(_merchant);
+    }
+
+    function changeDiscount(uint _newDiscount) external onlyOwner{
+	discountGen = _newDiscount;
     }
 
     //Función que para el contrato en caso de emergencia.

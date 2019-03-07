@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import './Ownable.sol';
+//import './SafeMath.sol';
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract Incentives is Ownable{
@@ -48,11 +49,16 @@ contract Incentives is Ownable{
 
     function resetPoints (address _client) public stoppedInEmergency userEnable{
 	incentives[_client].points = 0;
+	incentives[_client].discount = false;
 	emit pointedUser("Puntos reseteados al usuario", _client, msg.sender);
     }    
 
     function increasePointsToAdd (uint8 _points) public stoppedInEmergency onlyOwner{
         pointsToAdd = _points;
+    }
+
+    function enableToDiscount(address _client) public returns(bool){
+	return (incentives[_client].discount);
     }
 
     //Función que para el contrato en caso de emergencia.
