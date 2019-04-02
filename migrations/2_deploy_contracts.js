@@ -40,7 +40,7 @@ module.exports = function (deployer){
   var userAddress;
   deployer.deploy(Usuarios).then(function (instance) {userAddress = instance.address;});
   deployer.deploy(Merchant).then(function (instanceMerchant) {
-        instanceMerchant.createMerchant(web3.eth.accounts[0])
+        instanceMerchant.createMerchant("0x21Ebf4dEe6f30042081e545f328ff55EEa51024F")
 	CustFactory.deployed().then(async (instanceFactory) => {
                 console.log (userAddress)
                 await instanceFactory.setClientMerchantContracts(userAddress, instanceMerchant.address);

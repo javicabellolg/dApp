@@ -1,4 +1,14 @@
 {
+  "name": "truffle-init-webpack",
+  "version": "0.0.2",
+  "description": "Frontend example using truffle v3",
+  "scripts": {
+    "test": "truffle test",
+    "lint": "eslint ./",
+    "prepare": "truffle compile && npm test && npm run lint && webpack-cli --config ./webpack.config.js",
+    "build": "npm install",
+    "dev": "webpack-dev-server"
+  },
   "author": "Javier Cabello Laguna",
   "license": "MIT",
   "devDependencies": {
@@ -33,7 +43,8 @@
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
-    "openzeppelin-solidity": "2.0.0",
-    "solc": "^0.5.3"
+    "openzeppelin-solidity": "^2.0.0",
+    "solc": "^0.5.3",
+    "truffle-hdwallet-provider": "^1.0.6"
   }
 }

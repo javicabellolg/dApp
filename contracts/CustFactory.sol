@@ -69,6 +69,7 @@ contract CustFactory is Ownable{
 
     event billCreationStatus (string errMsg, uint id, address client);
     event blackListed (string Msg, address user, uint amount, address notifier);
+    event eventUser (bool status, address user);
 
     struct black{
         address notifier;
@@ -91,7 +92,8 @@ contract CustFactory is Ownable{
     }
 
     modifier requireUser(address _client){
-	require (usuarioActivo.userActiveState(_client), "El usuario no está dado de alta en el sistema");
+    emit eventUser (usuarioActivo.userActiveState(_client), _client);
+    require (usuarioActivo.userActiveState(_client), "El usuario no está dado de alta en el sistema");
     	_;
     }
 

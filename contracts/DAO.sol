@@ -149,6 +149,10 @@ contract DAO is Ownable {
 	check = interfaceCheckAmount (_address); // Esta es la dirección del contrato de gestión de cobro.
     }
 
+    function resumeContract() public onlyOwner {
+        isStopped = false;
+    }
+
     function stopContract() public onlyOwner {
         isStopped = true;
     }

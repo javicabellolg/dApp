@@ -7,8 +7,8 @@ import { default as contract } from 'truffle-contract'
 
 // Artefactos usados en la abstraccion
 import CustFactoryArtifact from '../../build/contracts/CustFactory.json'
-//import TokenArtifact from '../../build/contracts/Token.json' 
-import TokenArtifact from '../../build/contracts/CustToken.json' 
+import TokenArtifact from '../../build/contracts/Tokens.json' 
+//import TokenArtifact from '../../build/contracts/CustToken.json' 
 import DAOArtifact from '../../build/contracts/DAO.json'
 import CreateArtifact from '../../build/contracts/createPays.json'
 import IncentivesArtifact from '../../build/contracts/Incentives.json'
@@ -19,10 +19,10 @@ const Create = TruffleContract(CreateArtifact)
 const DAO = TruffleContract(DAOArtifact)
 const Incentives = TruffleContract (IncentivesArtifact)
 
-let Token_address = "0xdbcc44bf839fa338cfec0e36ddc40f1469b9990e"
-let Factory_address = "0x15d63deda923c2ab167fa9eff53d921109799c09"
-let DAO_address = "0x92ed41d6def3c64610e7931d24083c6c41c28c9e"
-let Incentives_address = "0xea79dca1c0d5356e0df460100953241917979c82"
+let Token_address = "0x93044772110864bc0d134ce0e7c174101d5fd10c"
+let Factory_address = "0x75e62fb7bd1ccac5f4ae6bf10ae52b5a0d856360"
+let DAO_address = "0xbe9d393b23098aaef0f2a975bd3262b44ddfd923"
+let Incentives_address = "0xa906c0c8f8e7cdbb49523847b5bee77d057814a8"
 
 let accounts
 let account
@@ -43,6 +43,7 @@ const App = {
     //alert("Comencemos...Aunque la interfaz sea poco amigable, ver�s dos partes bien diferenciadas. La parte del proveedor y la parte del cliente. Para comenzar es necesario que revises si tienes activa en MetaMask la misma cuenta con la que has depslegado los contratos, esta es la cuenta Owner del Factory Contract que crea las facturas.")
     //alert("Ahora, por favor, introduce un valor de factura (en Wei), dale un id numérco a la misma y cargala a una cuenta")
     // Balance inicial de cuenta
+
     web3.eth.getAccounts(function (err, accs) {
       if (err != null) {
         alert('There was an error fetching your accounts.')
@@ -142,7 +143,7 @@ const App = {
     })
     
     Factory.at(Factory_address).then(function (instance) {
-        fact = instance
+	fact = instance
         eventBill = fact.billCreationStatus()
         eventUser = fact.eventUser()
         eventBill.watch(function(err, res) {
@@ -157,11 +158,11 @@ const App = {
             alert("El estado del usuario "+res.args.user+" en el sistema es "+res.args.status)
           }
         })
-        console.log(receiver)
-        fact.createPayContract(id, receiver, amount, time_extra_value, meta).catch(function (err) {
+	console.log(receiver)
+	fact.createPayContract(id, receiver, amount, time_extra_value, meta).catch(function (err) {
             console.log(err);
 	    alert ("Usted no puede realizar esta acción.No es el Owner del contrato por lo que no puede dar de alta requerimientos de pago. Por favor, rechace la transaccion y pague, moroso.")
-        })
+	})
     }).catch(function (e) {
         console.log(e)
     })
@@ -214,7 +215,8 @@ const App = {
                                 console.log(e)
                                 self.setStatusClient('Error al procesar la transacción.Probablemente se deba a falta de fondos, por favor, revise sus fondos en su Wallet y revise el log.')
                   }).then(function(){
-                  Create.at(create).payingWithToken(account, amountPago, {from: account, value: amountETH}).then(function(){
+                  console.log("Account: "+account)
+		  Create.at(create).payingWithToken(account, amountPago, {from: account, value: amountETH}).then(function(){
                         Create.at(create).ownerBill(account).then(function(data){
                                 let dataCoin = data
                                 let pendiente = dataCoin[1].toString()
@@ -238,11 +240,11 @@ const App = {
     const self = this
 
     Token.setProvider(web3.currentProvider)
-    Token.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Token.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     Factory.setProvider(web3.currentProvider)
-    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Factory.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     Create.setProvider(web3.currentProvider)
-    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
 
     const addressToken = document.getElementById('JCLadd').value
     const idPago = parseInt(document.getElementById('id_pago2').value)
@@ -269,11 +271,11 @@ const App = {
     const self = this
 
     Token.setProvider(web3.currentProvider)
-    //Token.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Token.web3.eth.defaultAccount=web3.eth.accounts[0]
     Factory.setProvider(web3.currentProvider)
-    //Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
     Create.setProvider(web3.currentProvider)
-    //Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
     DAO.setProvider(web3.currentProvider)
     
     let idFact = parseInt(document.getElementById('id_pago2').value)
@@ -296,8 +298,9 @@ const App = {
         console.log(create)
         DAO.at(DAO_address).then(function(instance){
           let dao = instance
-          console.log(idProp_aut)
-          dao.setInterfaceChackAmount(create).then(function(){
+          console.log(dao)
+          //dao.setInterfaceChackAmount(create)
+          instance.setInterfaceChackAmount(create).then(function(){
             console.log("Hola")
             console.log("Auto"+idProp_aut)
             idProp_aut++
@@ -333,12 +336,13 @@ const App = {
     const self = this
 
     Token.setProvider(web3.currentProvider)
-    Token.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Token.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     Factory.setProvider(web3.currentProvider)
-    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Factory.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     Create.setProvider(web3.currentProvider)
-    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     DAO.setProvider(web3.currentProvider)
+    DAO.web3.eth.defaultAccount=account
     
     let idPropose = parseInt(document.getElementById('idpropvote').value)
     let vote = document.getElementById('vote').value
@@ -357,7 +361,73 @@ const App = {
       //console.log(msg.sender)
       dao.voting(idPropose, boolValue, justification)
     })
-  }
+  },
+
+  getdebt: function () {
+    const self = this
+
+    Token.setProvider(web3.currentProvider)
+    Token.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Factory.setProvider(web3.currentProvider)
+    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.setProvider(web3.currentProvider)
+    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+
+    const idDebt = parseInt(document.getElementById('id_pago2').value)
+
+
+    this.setStatus('Initiating transaction... (please wait)')
+
+    let create
+    let factory
+
+    Factory.at(Factory_address).then(function (instance) {
+        factory = instance
+        console.log(instance)
+        console.log(factory.idToOwner(idDebt))
+        factory.idToOwner(idDebt).then(function (address) {
+                create = address
+                CreateAdd = address
+                        Create.at(create).ownerBill(account).then(function(data){
+                                let dataCoin = data
+                                let pendiente = dataCoin[1].toString()
+                                self.setStatusClient("Queda pendiente por pagar "+pendiente+" Weis de la factura con ID: "+idDebt)
+                                alert("Queda pendiente por pagar "+pendiente+" Weis de la factura con ID: "+idDebt)
+                        })
+                  }).then(function () {
+                        self.refreshBalance()
+                  })
+        })
+    },
+  
+    getcli: function () {
+    const self = this
+
+    Token.setProvider(web3.currentProvider)
+    Token.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Factory.setProvider(web3.currentProvider)
+    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.setProvider(web3.currentProvider)
+    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+
+    const userBlack = document.getElementById('addressClient').value
+
+
+    this.setStatus('Initiating transaction... (please wait)')
+
+    let userInfo
+    let factory
+
+    Factory.at(Factory_address).then(function (instance) {
+        factory = instance
+        factory.blacklist(userBlack).then(function (response) {
+                userInfo = response
+		if (userInfo_deuda == 0) {
+			alert("El usuario no está registrado en la blacklist")
+		} else { alert("El usuario ha sido dado de alta en la blacklist por: "+userInfo[0]+" porque debe la cantidad de : "+userInfo[1]+"Weis")}
+         })
+      })
+    }
 
 }
 
