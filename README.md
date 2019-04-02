@@ -1,42 +1,4 @@
-# TFM
-
-## 0 - Consideraciones previas
-
-Para la correcta ejecución del programa es necesario tener instalado:
-
-- npm version 5.6.0 o superior
-- truffle version 4.1.14 o superior
-- solidity version 0.4.24
-- ganache o Ganache-cli
-- librería OpenZeppelin: `$ npm install openzeppelin-solidity`
-
-El resto de dependencias necesarias se encuentran en el fichero *package.json* para que sean instaladas en la ejecución de `$ npm install`inicial
-
-Una vez instaladas las dependencias es necesario compilar los contratos, pues se proporcionan sin compilar: `$ truffle compile` Antes de realizar la migración es necesario tener una red disponible donde desplegar los contratos. Para ello, se utilizará `ganache-cli`. Para evitar el bajo límite de gas que por defecto tiene ganache, se utilizará el flag `-l` que permite establecer el límite personalizado: `$ ganache-cli -l 100000000`
-
-> Como se observa se establece un límite suficientemente alto. Por otro lado, al modificar el límite en la red también es necesario establecer un límite de gas para el proyecto, esto se hará en el fichero `truffle.js`. A continuación se muestra la configuración establecida para este proyecto:
-
-```
-module.exports = {
-  networks: {
-    ganache: {
-      host: '127.0.0.1',
-      port: 8545,
-      gas:"29000000",
-      network_id: '*' // Match any network id
-    }
-  }
-}
-```
-
-Con esto, se puede proceder a migrar el proyecto a la red:
-
-```
-$ truffle migrate --network ganache
-```
-
-### EXPLICAR CONTRATOS INCLUIDOS
-
+# JCL_TFM
 ## 1-Contratos Desarrollados
 
 ### 1.1-CustToken
@@ -363,38 +325,4 @@ Se setea la dirección del Token y se pueden efectuar pagos con la función *pay
 
  
 
-## 3-Relación y Orden de los comandos (PROVISIONAL)
-
-La siguiente relación es para su comprobación directamente sobre línea de comandos. Esta relación de comandos será la incluída (con modificaciones obvias) en el desarrollo del Front, por lo que son provisionales y únicamente sirven para la comprobación funcional.
-
-```
->> Usuarios.at("DIRECCIÓN CONTRATO MIGRADO").createUser(web3.eth.accounts[1])
->> Merchant.at("DIRECCIÓN CONTRATO MIGRADO").createMerchant(web3.eth.accounts[0])
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").createPayContract(11, web3.eth.accounts[1], 1000, 10, "DIRECCIÓN CONTRATO _Tokens_ MIGRADO")
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").idToOwner(11)
->> Tokens.at("DIRECCIÓN CONTRATO MIGRADO").transfer(web3.eth.accounts[1], 1000)
->> Tokens.at("DIRECCIÓN CONTRATO MIGRADO").transfer(<dirección_contrato_gestión_requerimiento_cobro>, 1000) --> SE DEBE REALIZAR LA TRANSFERENCIA DESDE LA CUENTA QUE PAGA AL CONTRATO Y, POSTERIORMENTE, DESDE EL CONTRATO A LA CUENTA QUE REQUIERE EL COBRO.
->> createPays.at("DIRECCIÓN CONTRATO MIGRADO").payingWithToken(web3.eth.accounts[1], 10,{from: web3.eth.accounts[1], value:0})
-################################################
-## Cambios Funcionales al incluir DAO.
-################################################
-Las siguientes consultas:
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").permissionAdd(web3.eth.accounts[0])
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").addToBlackList(web3.eth.accounts[1], 11) --> Es necesario que esté ejecutada la sentencia anterior para habilitar al usuario que ejecute esta.
- 
-Ya no son necesarias. La idea es que el único elemento que tenga permisos aquí sea el contrato de la DAO. De manera que, si el usuario pretende incluir a un cliente e la blacklist, se tenga que abrir una propuesta para que sea votada. Es el usuario el que se encargue de publicitar su propuesta que es abierta a todos los inscritos en la DAO. Una vez consumido el tiempo, el usuario deberá solicitar la ejecución de la propuesta que se ejecutará si ha alcanzado el quorum mínimo y el % de votación mínimo.
- 
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").addMember(web3.eth.accounts[0]) --> Se añade al usuario a la DAO.
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").setInterfaceToBlacklist("DIRECCIÓN CONTRATO _CustFactory_ MIGRADO") --> AUTOMATIZADO
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").setInterfaceChackAmount("DIRECCIÓN CONTRATO _createPays_ CREADO") --> Este proceso hay que automatizarlo, pero debe ser con el FRONT
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").newProposal(12, web3.eth.accounts[1], 11, "Moroso") --> SE da de alta la propuesta.
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").voting(12, true, "Moroso") --> Se vota la propuesta. Solo puede votar los usuarios de la DAO y que no hayan votado.
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").permissionAdd("<dirección_contrato_DAO") --> Este proceso hay que automatizarlo. --> AUTOMATIZADO
->> DAO.at("DIRECCIÓN CONTRATO MIGRADO").execution(12) --> Se ejecuta la propuesta y si es satisfactoria, se añade al usuario a la blacklist.
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").blacklist(web3.eth.accounts[1])
- 
-################################################
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").deleteFromBLackList(web3.eth.accounts[1], 11)
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").stopContract()
->> CustFactory.at("DIRECCIÓN CONTRATO MIGRADO").resumeContract()
-```
+## 3-Relación y Orden de los comandos
