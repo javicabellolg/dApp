@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Javier Cabello Laguna: PEC3 w/ Frontend</title>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <script src="./app.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<!-- <link rel="stylesheet" href="app.css"> -->
+</head>
+
+<!-- Take this CSS to a CSS file -->
+<style>
+    .footer {
+      background-color: gainsboro;
+    }
+    
+    .footer-cp {
+      font-size:small;
+    }
+</style>
+
+<body>
+    <body>
+	<div class="card-body">
+                      <p style="text-align:right;">
+                            <h6><a href="./index.html"> Back To Home</a></h6>
+                      </p>
+          </div>
+	 <div class="container mb-4">
+            <div class="jumbotron">
+              <p style="text-align:left;">
+                <h1 class="display-5">BlockpiFy</h1>
+                <hr class="my-4">
+              </p>
+              <p style="text-align:left;" class="lead"> 
+                <h2>Dapp Multidivisa - Client Side</h2>
+              </p>
+              <h3>Tu cuenta es: <span class="black"><span id="account"></span> </span></h3>
+              <h3>Tienes <span class="black"><span id="balance"></span> JCL</span></h3>
+            </div>
+          </div>
+      
+          <!-- Bootstrap doc for colors https://getbootstrap.com/docs/4.0/utilities/colors/ -->
+          <!-- HTML uses forms, commented are buttons to submit the forms (your original ones were kept because they call your JS functions) -->
+          <!-- Bootstrap files are imported from the internet, if you need to show the demo offline, you'll need to download them -->
+  
+          <div class="container mb-4">
+              <div class="card">
+                  <div class="p-2 mb-4 bg-primary text-white">Ejecutar Propuesta</div>
+                  <div class="card-body">
+                      <form>
+                        <div class="form-group row"> 
+                          <label for="addressClient" class="col-sm-2 col-form-label">ID Propuesta: </label>
+                          <div class="col-sm-10">
+                            <input type="text" id="idPropuesta" class="form-control" placeholder="Incluir aquí el ID de la propuesta sometida a votación">
+                          </div>
+                        </div>
+                      </form>
+                      <div class="form-group row">
+                          <div class="col text-center">
+                            <button id="send_dir" class="btn btn-primary" onclick="App.execute()">Ejecutar</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+  <span id="status"></span>
+  <br>
+  <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
+</body>
+</p>
+</html>

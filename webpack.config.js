@@ -23,7 +23,8 @@ module.exports = {
       { from: './app/pay.html', to: 'pay.html' },
       { from: './app/voteProposal.html', to: 'voteProposal.html' },
       { from: './app/incentives.html', to: 'incentives.html' },
-      { from: './app/changeToken.html', to: 'changeToken.html' },
+      { from: './app/execute.html', to: 'execute.html' },
+      { from: './app/changeToken.html', to: 'changeToken.html' }
     ])
   ],
   devtool: 'source-map',

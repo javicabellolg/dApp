@@ -112,6 +112,42 @@ const App = {
    }, 500)
   },
 
+  refreshStatusVoting: function () {
+   setInterval(function() {
+
+    const self = this
+
+    let idPropose = parseInt(document.getElementById('idpropvote').value)
+
+    let meta
+    let meta2
+
+    var account = web3.eth.accounts[0]
+
+    // Se fuerza refresco de balance continuo en área proveedor
+    //Token.deployed().then(function (instance) {
+    DAO.at(DAO_address).then(function (instance) {
+      meta = instance
+        return meta.idToProposal(idPropose)
+    }).then(function (value) {
+      const votingElement = document.getElementById('numb_votes')
+      const timeElement = document.getElementById('time_to')
+      const executionElement = document.getElementById('execute_to')
+      var time_ends = value[5].valueOf()
+      var timeUTC = new Date(time_ends*1000)
+      var endTime = timeUTC.toLocaleString()
+      timeElement.innerHTML = endTime
+      votingElement.innerHTML = value[8].valueOf()
+      executionElement.innerHTML = value[6]
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error getting balance; see log.')
+    })
+
+    // Se fuerza refresco de balance continuo en área cliente
+   }, 500)
+  },
+
   registerBill: function () {
     const self = this
 
@@ -304,9 +340,11 @@ const App = {
             console.log("Hola")
             console.log("Auto"+idProp_aut)
             idProp_aut++
-            console.log("Auto"+idProp_aut)
+            console.log("Auto"+idPropose)
             console.log("dao.proposal("+idProp_aut + add_cli + idFact + description)
-            dao.newProposal(idProp_aut, add_cli, idFact, description)
+            dao.newProposal(idPropose, add_cli, idFact, description).then(function(){
+	    	alert("Se ha dado de alta la nueva solicitud (id: "+idPropose+") para la factura con id: "+idFact+" del cliente: "+add_cli)
+	    })
           })
         })
       })
@@ -335,6 +373,8 @@ const App = {
   voting: function (){
     const self = this
 
+    self.refreshStatusVoting()
+
     Token.setProvider(web3.currentProvider)
     Token.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
     Factory.setProvider(web3.currentProvider)
@@ -360,6 +400,23 @@ const App = {
       let dao = instance
       //console.log(msg.sender)
       dao.voting(idPropose, boolValue, justification)
+    })
+  },
+
+  execute: function (){
+    const self = this
+
+    DAO.setProvider(web3.currentProvider)
+    DAO.web3.eth.defaultAccount=account
+
+    let idPropose = parseInt(document.getElementById('idPropuesta').value)
+
+    console.log ("Id Propuesta"+idPropose)
+
+    DAO.at(DAO_address).then(function(instance){
+      let dao = instance
+      //console.log(msg.sender)
+      dao.execution(idPropose)
     })
   },
 
