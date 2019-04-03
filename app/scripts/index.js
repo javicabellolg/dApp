@@ -479,9 +479,36 @@ const App = {
         factory = instance
         factory.blacklist(userBlack).then(function (response) {
                 userInfo = response
-		if (userInfo_deuda == 0) {
+		console.log (userInfo)
+		console.log(userInfo[1])
+		if (userInfo[1] == 0) {
 			alert("El usuario no está registrado en la blacklist")
 		} else { alert("El usuario ha sido dado de alta en la blacklist por: "+userInfo[0]+" porque debe la cantidad de : "+userInfo[1]+"Weis")}
+         })
+      })
+    },
+
+    deleteBlack: function () {
+    const self = this
+
+    Factory.setProvider(web3.currentProvider)
+    Factory.web3.eth.defaultAccount=web3.eth.accounts[0]
+    Create.setProvider(web3.currentProvider)
+    Create.web3.eth.defaultAccount=web3.eth.accounts[0]
+
+    const userdeleteBlack = document.getElementById('addcli').value
+    const iddeleteBlack = parseInt(document.getElementById('idPropuesta').value)
+
+    this.setStatus('Initiating transaction... (please wait)')
+
+    let userInfo
+    let factory
+
+    Factory.at(Factory_address).then(function (instance) {
+        factory = instance
+        console.log(userdeleteBlack+"   "+iddeleteBlack)
+	factory.deleteFromBlackList(userdeleteBlack, iddeleteBlack).then(function () {
+              alert("El usuario ha sido eliminado de la blacklist")
          })
       })
     }

@@ -24,6 +24,7 @@ module.exports = {
       { from: './app/voteProposal.html', to: 'voteProposal.html' },
       { from: './app/incentives.html', to: 'incentives.html' },
       { from: './app/execute.html', to: 'execute.html' },
+      { from: './app/delete.html', to: 'delete.html' },
       { from: './app/changeToken.html', to: 'changeToken.html' }
     ])
   ],
