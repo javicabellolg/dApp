@@ -1,7 +1,7 @@
 // Allows us to use ES6 in our migrations and tests.
 require('babel-register')
 var HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = "average aunt very upper solar pet orange engine excess find ranch spawn";
+var mnemonic = " ";
 
 module.exports = {
   plugins: [ "truffle-security" ],
