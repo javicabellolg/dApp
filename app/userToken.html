@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Javier Cabello Laguna: PEC3 w/ Frontend</title>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+        <script src="./app.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <!-- <link rel="stylesheet" href="app.css"> -->
+    </head>
+  <!-- Take this CSS to a CSS file -->
+<style>
+    .footer {
+      background-color: gainsboro;
+    }
+    
+    .footer-cp {
+      font-size:small;
+    }
+  </style>
+<body>
+    <div class="container mb-4">
+        <div class="jumbotron">
+          <p style="text-align:left;">
+            <h1 class="display-5">BlockpiFy</h1>
+            <hr class="my-4">
+          </p>
+          <p style="text-align:left;" class="lead">
+            <h2>Dapp Multidivisa - Client Side</h2>
+          </p>
+          <h3>Tu cuenta es: <span class="black"><span id="account"></span> </span></h3>
+          <h3>Tienes: <span class="black"><span id="balance"></span> CTKN</span></h3>
+        </div>
+    </div>    
+
+  <br>
+  <div class="container mb-4">
+      <div class="card">
+          <div class="p-2 mb-4 bg-primary text-white">Send Token</div>
+          <div class="card-body">
+              <form>
+                <div class="form-group row"> 
+                  <label for="amount">Amount:</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="amount" placeholder="e.g., 100"></input>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="receiver">To Address:</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
+                  </div>
+                </div>
+              </form>
+              <div class="form-group row">
+                  <div class="col text-center">
+                    <button id="send" onclick="App.sendCoin()">Send Token</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <br><br>
+  <span id="statusSend"></span>
+  <br>
+
+  <br>
+  <div class="container mb-4">
+      <div class="card">
+          <div class="p-2 mb-4 bg-primary text-white">Buy Token</div>
+          <div class="card-body">
+              <form>
+                <div class="form-group row">
+                  <label for="amountEth">Amount Ether:</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="amountEth" placeholder="e.g., 10"></input>
+                  </div>
+                </div>
+              </form>
+              <div class="form-group row">
+                  <div class="col text-center">
+                    <button id="buy" onclick="App.buyCoin()">Buy Token</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <br><br>
+  <span id="statusBuy"></span>
+  <br>
+
+  <br>
+  <div class="container mb-4">
+      <div class="card">
+          <div class="p-2 mb-4 bg-primary text-white">Burn Tokens</div>
+          <div class="card-body">
+              <form>
+                <div class="form-group row"> 
+                  <label for="amountB">Amount:</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="amountB" placeholder="e.g., 50"></input>
+                  </div>
+                </div>
+              </form>
+              <div class="form-group row">
+                <div class="col text-center">
+                  <button id="burn" onclick="App.burnCoin()">Burn Token</button>
+                </div>
+              </div>
+          </div>
+      </div>
+  <br>
+</body>
+
+<footer>
+  <span class="hint"><strong>Stopped: <span class="black"><span id="isStopped"></span>; </span></span>
+  <span class="hint"><strong>Owner: <span class="black"><span id="isOwner"></span>; </span></span>
+  <span class="hint"><strong>Last Price: <span class="black">1ETH : <span id="getPrice"></span>Tokens; </span></span>
+  <span class="hint"><strong>My address: <span class="black"><span id="getAddress"></span></span></span>  
+</footer>
+</html>

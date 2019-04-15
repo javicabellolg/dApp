@@ -12,17 +12,23 @@ import TokenArtifact from '../../build/contracts/Tokens.json'
 import DAOArtifact from '../../build/contracts/DAO.json'
 import CreateArtifact from '../../build/contracts/createPays.json'
 import IncentivesArtifact from '../../build/contracts/Incentives.json'
+import AltaMerchantArtifact from '../../build/contracts/Merchant.json'
+import AltaUserArtifact from '../../build/contracts/Usuarios.json'
 
 const Token = TruffleContract(TokenArtifact)
 const Factory = TruffleContract(CustFactoryArtifact)
 const Create = TruffleContract(CreateArtifact)
 const DAO = TruffleContract(DAOArtifact)
 const Incentives = TruffleContract (IncentivesArtifact)
+const Merchant = contract(AltaMerchantArtifact)
+const Usuarios = contract(AltaUserArtifact)
 
-let Token_address = "0x93044772110864bc0d134ce0e7c174101d5fd10c"
-let Factory_address = "0x75e62fb7bd1ccac5f4ae6bf10ae52b5a0d856360"
-let DAO_address = "0xbe9d393b23098aaef0f2a975bd3262b44ddfd923"
-let Incentives_address = "0xa906c0c8f8e7cdbb49523847b5bee77d057814a8"
+let Token_address = "0x78334246c7025c5ee335196b6018b764a238f4ab"
+let Factory_address = "0xe92f08483f47e71e2bab3cb3e44d3ab32fb13ea6"
+let DAO_address = "0x68ab9d3666a2d1fa128aabefa3c7947c323f8911"
+let Incentives_address = "0x49ee1e125fc6a055951f5e6953250eb3dc0d1116"
+let Usuarios_address = "0x2e13062391a3f4cc38ff2a9b0e07aeda9db254c1"
+let Merchant_address = "0x871d4a5a8f340c8e824e525a04518958133a33e4"
 
 let accounts
 let account
@@ -148,15 +154,264 @@ const App = {
    }, 500)
   },
 
+  setCoin: function () {
+    const self = this
+    const supply = parseInt(document.getElementById('supply').value)
+    const name = document.getElementById('name').value
+    const symbol = document.getElementById('symbol').value
+    let token
+    Token.at(Token_address).then(function (instance) {
+      token = instance
+      return token.setToken(supply, name, symbol, { from: account })
+    }).then(function () {
+      alert('Setting complete!')
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error setting coin; see log.')
+    })
+
+  },
+
+  sendCoin: function () {
+    const self = this
+    const amount = parseInt(document.getElementById('amount').value)
+    const receiver = document.getElementById('receiver').value
+    let token
+    Token.at(Token_address).then(function (instance) {
+      token = instance
+      return token.transfer(receiver, amount, { from: account })
+    }).then(function () {
+      alert('Transaction complete!')
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      alert('Error sending coin; see log.')
+    })
+
+  },
+
+  burnCoin: function () {
+    const self = this
+    const amount = parseInt(document.getElementById('amountB').value)
+    let token
+    Token.at(Token_address).then(function (instance) {
+      token = instance
+      return token.burn(amount, { from: account })
+    }).then(function () {
+      alert('Burn complete!')
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      alert('Error burning coin; see log.')
+    })
+
+  },
+
+  mintCoin: function () {
+    const self = this
+    const amount = parseInt(document.getElementById('amountM').value)
+    let token
+    Token.at(Token_address).then(function (instance) {
+      token = instance
+      return token.mint(amount, { from: account })
+    }).then(function () {
+      alert('Mint complete!')
+      self.refreshBalance()
+    }).catch(function (e) {
+      console.log(e)
+      alert('Error minting coin; see log.')
+    })
+
+  },
+
+//------------------------------------ALBERTO------------------------------------------
+  
+  sendMerchant: function () {
+    const self = this
+
+    Merchant.setProvider(web3.currentProvider)
+    Merchant.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let meta
+    console.log (Merchant)
+    Merchant.at(Merchant_address).then(function (instance) {
+      meta = instance
+      console.log(direccion)
+      console.log(meta)
+      return meta.createMerchant(direccion)
+    }).then(function () {
+      self.setStatus('¡Usuario creado con éxito!')
+      alert('El usuario se ha creado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en el alta de usuario. Revise los logs.')
+      alert('El alta ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  dropMerchant: function () {
+    const self = this
+
+    Merchant.setProvider(web3.currentProvider)
+    Merchant.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let meta
+    console.log (Merchant)
+    Merchant.at(Merchant_address).then(function (instance)  {
+      meta = instance
+      console.log(direccion)
+      console.log(meta)
+      return meta.removeInfo(direccion)
+    }).then(function () {
+      self.setStatus('¡Usuario eliminado con éxito!')
+      alert('El usuario se ha eliminado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en el borrado de usuario. Revise los logs.')
+      alert('El borrado ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  // Llamo a la cadena de bloques desde este código para borrar nuevo usuario.
+  editMerchant: function () {
+    const self = this
+
+    Merchant.setProvider(web3.currentProvider)
+    Merchant.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let meta
+    console.log (Merchant)
+    Merchant.at(Merchant_address).then(function (instance){
+      meta = instance
+      console.log(direccion)
+      console.log(meta)
+      return meta.updateInfo(direccion)
+    }).then(function () {
+      self.setStatus('¡Información del usuario modificada con éxito!')
+      alert('La información del usuario se ha modificado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en la modificación de la información del usuario. Revise los logs.')
+      alert('La modificación de la información ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  sendUser: function () {
+    const self = this
+
+    Usuarios.setProvider(web3.currentProvider)
+    Usuarios.web3.eth.defaultAccount="0x21Ebf4dEe6f30042081e545f328ff55EEa51024F"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let user
+    console.log (Usuarios)
+    Usuarios.at(Usuarios_address).then(function (instance) {
+      user = instance
+      console.log(direccion)
+      return user.createUser(direccion)
+    }).then(function () {
+      self.setStatus('Usuario creado con éxito!')
+      alert('El usuario se ha creado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en el alta de usuario. Revise los logs.')
+      alert('El alta ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  dropUser: function () {
+    const self = this
+
+    Usuarios.setProvider(web3.currentProvider)
+    Usuarios.web3.eth.defaultAccount="0xf90b8b66610d7272d7d58d24143791dc6df52c4b"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let user
+    console.log (Usuarios)
+    Usuarios.at(Usuarios_address).then(function (instance) {
+      user = instance
+      console.log(direccion)
+      console.log(meta)
+      return user.removeInfo(direccion)
+    }).then(function () {
+      self.setStatus('¡Usuario eliminado con éxito!')
+      alert('El usuario se ha eliminado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en el borrado de usuario. Revise los logs.')
+      alert('El borrado ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  // Llamo a la cadena de bloques desde este código para borrar nuevo merchant.
+  editUser: function () {
+    const self = this
+
+    Usuarios.setProvider(web3.currentProvider)
+    Usuarios.web3.eth.defaultAccount="0xf90b8b66610d7272d7d58d24143791dc6df52c4b"
+
+    const direccion = document.getElementById('addcli').value
+
+    console.log("0   "+direccion)
+    this.setStatus('Iniciando la transacción... (espere)')
+
+    let user
+    console.log (Usuarios)
+    Usuarios.at(Usuarios_address).then(function (instance) {
+      user = instance
+      console.log(direccion)
+      console.log(meta)
+      return user.updateInfo(direccion)
+    }).then(function () {
+      self.setStatus('¡Información del usuario modificada con éxito!')
+      alert('La información del usuario se ha modificado con éxito. ¡Enhorabuena!')
+    }).catch(function (e) {
+      console.log(e)
+      self.setStatus('Error en la modificación de la información del usuario. Revise los logs.')
+      alert('La modificación de la información ha fallado. ¿Estás seguro de que eres el owner?. El problema puede venir de ahí.')
+    })
+  },
+
+  
+
+//------------------------FIN: Alberto ----------------------------------------
+
   registerBill: function () {
     const self = this
 
     Token.setProvider(web3.currentProvider)
-    Token.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"    
+    //Token.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+    Token.web3.eth.defaultAccount=account
     Factory.setProvider(web3.currentProvider)
-    Factory.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+    //Factory.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+    Factory.web3.eth.defaultAccount=account
     Create.setProvider(web3.currentProvider)
-    Create.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
+    Create.web3.eth.defaultAccount=account
+    //Create.web3.eth.defaultAccount="0x21ebf4dee6f30042081e545f328ff55eea51024f"
 
     const amount = parseInt(document.getElementById('amount_fact').value);
     const id = parseInt(document.getElementById('id_fact').value);
@@ -195,7 +450,7 @@ const App = {
           }
         })
 	console.log(receiver)
-	fact.createPayContract(id, receiver, amount, time_extra_value, meta).catch(function (err) {
+	fact.createPayContract(id, receiver, amount, time_extra_value, meta, {from: account}).catch(function (err) {
             console.log(err);
 	    alert ("Usted no puede realizar esta acción.No es el Owner del contrato por lo que no puede dar de alta requerimientos de pago. Por favor, rechace la transaccion y pague, moroso.")
 	})
